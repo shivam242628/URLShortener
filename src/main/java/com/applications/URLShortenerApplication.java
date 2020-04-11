@@ -1,10 +1,16 @@
 package com.applications;
 
+import com.applications.handler.URLShortenerHandler;
 import com.applications.resources.URLShortenerResource;
-import com.sun.tools.javac.parser.ScannerFactory;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 public class URLShortenerApplication extends Application<URLShortenerConfiguration> {
 
@@ -26,8 +32,10 @@ public class URLShortenerApplication extends Application<URLShortenerConfigurati
     public void run(final URLShortenerConfiguration configuration,
                     final Environment environment) {
         // TODO: implement application
-        URLShortenerResource urlShortenerResource = new URLShortenerResource();
+        URLShortenerHandler urlShortenerHandler = new URLShortenerHandler();
+        URLShortenerResource urlShortenerResource = new URLShortenerResource(new URLShortenerHandler());
 
+        environment.jersey().register(urlShortenerHandler);
         environment.jersey().register(urlShortenerResource);
     }
 
