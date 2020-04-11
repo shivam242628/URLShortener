@@ -20,6 +20,7 @@
         <mainClass>com.applications.URLShortenerApplication</mainClass>
     </properties>
 
+
     <dependencyManagement>
         <dependencies>
             <dependency>
