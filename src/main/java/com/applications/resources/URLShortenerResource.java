@@ -11,7 +11,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 
 @Service
 @Path("/ita.ly")
@@ -27,16 +26,16 @@ public class URLShortenerResource {
     @Timed
     @ExceptionMetered
     @Path("/{id}")
-    public Response getUrl(@PathParam("id") String id,
+    public void getUrl(@PathParam("id") String id,
                            @Context HttpServletResponse response) {
-        return urlShortenerHandler.redirectToOriginalURL(id, response);
+        urlShortenerHandler.redirectToOriginalURL(id, response);
     }
 
     @POST
     @Timed
     @ExceptionMetered
     @Path("/")
-    public Response create(String url) {
+    public String create(String url) {
         return urlShortenerHandler.createTinyUrl(url);
     }
 }

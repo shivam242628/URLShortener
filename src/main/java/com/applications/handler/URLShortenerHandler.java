@@ -1,7 +1,7 @@
 package com.applications.handler;
 
-import com.applications.exception.InvalidURL;
-import com.applications.exception.ShortURLAlreadyExist;
+import com.applications.exception.InvalidURLException;
+import com.applications.exception.ShortURLAlreadyExistException;
 import com.applications.exception.ShortURLNotFoundException;
 import com.google.common.hash.Hashing;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -10,49 +10,41 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class URLShortenerHandler {
 
     private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
+    private static final String SHORT_URL_PREFIX = "localhost:8080/ita.ly/";
+    private static final UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
 
-    public Response redirectToOriginalURL(String id, HttpServletResponse response) throws ShortURLNotFoundException {
+    public void redirectToOriginalURL(String id, HttpServletResponse response) throws ShortURLNotFoundException {
         try (Jedis jedis = pool.getResource()) {
             String url = jedis.get(id);
-            if (url == null) {
+            if (url == null)
                 throw new ShortURLNotFoundException("No ita.ly URL Exists for given ID: " + id);
-            } else {
-                response.sendRedirect(url);
-            }
+
+            response.sendRedirect(url);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return Response.ok("SUCCESS", MediaType.APPLICATION_JSON).build();
     }
 
-    public Response createTinyUrl(String url) {
-        if (!isURLValid(url))
-            throw new InvalidURL("Invalid URL");
+    public String createTinyUrl(String url) {
+        if (!urlValidator.isValid(url))
+            throw new InvalidURLException("Invalid URL: " + url);
 
-        String id = Hashing.murmur3_32().hashString(url, StandardCharsets.UTF_8).toString();
+        String id = getHashValue(url);
         try (Jedis jedis = pool.getResource()) {
             if (jedis.get(id) != null)
-                throw new ShortURLAlreadyExist("Short URL already exists.");
-
+                throw new ShortURLAlreadyExistException("Short URL already exists.");
             jedis.set(id, url);
         }
-        String shortenedUrl = "localhost:8080/ita.ly/" + id;
-        return Response.ok(shortenedUrl, MediaType.APPLICATION_JSON).build();
+        return SHORT_URL_PREFIX + id;
     }
 
-    public boolean isURLValid(String url) {
-        UrlValidator urlValidator = new UrlValidator(
-                new String[]{"http", "https"}
-        );
-
-        return urlValidator.isValid(url);
+    private String getHashValue(String url) {
+        return Hashing.murmur3_32().hashString(url, StandardCharsets.UTF_8).toString();
     }
 }
