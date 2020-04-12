@@ -27,8 +27,8 @@ public class URLShortenerResource {
     @Timed
     @ExceptionMetered
     @Path("/{id}")
-    public Response getUrl (@PathParam("id") String id,
-                            @Context HttpServletResponse response) {
+    public Response getUrl(@PathParam("id") String id,
+                           @Context HttpServletResponse response) {
         return urlShortenerHandler.redirectToOriginalURL(id, response);
     }
 

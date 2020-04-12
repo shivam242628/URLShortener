@@ -5,12 +5,7 @@ import com.applications.resources.URLShortenerResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
 
 public class URLShortenerApplication extends Application<URLShortenerConfiguration> {
 

@@ -1,7 +1,8 @@
 package com.applications.handler;
 
 import com.applications.exception.InvalidURL;
-import com.applications.exception.URLNotFoundException;
+import com.applications.exception.ShortURLAlreadyExist;
+import com.applications.exception.ShortURLNotFoundException;
 import com.google.common.hash.Hashing;
 import org.apache.commons.validator.routines.UrlValidator;
 import redis.clients.jedis.Jedis;
@@ -18,11 +19,11 @@ public class URLShortenerHandler {
 
     private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
 
-    public Response redirectToOriginalURL(String id, HttpServletResponse response) throws URLNotFoundException {
+    public Response redirectToOriginalURL(String id, HttpServletResponse response) throws ShortURLNotFoundException {
         try (Jedis jedis = pool.getResource()) {
             String url = jedis.get(id);
             if (url == null) {
-                throw new URLNotFoundException("No URL Exists for given ID: " + id);
+                throw new ShortURLNotFoundException("No ita.ly URL Exists for given ID: " + id);
             } else {
                 response.sendRedirect(url);
             }
@@ -38,6 +39,9 @@ public class URLShortenerHandler {
 
         String id = Hashing.murmur3_32().hashString(url, StandardCharsets.UTF_8).toString();
         try (Jedis jedis = pool.getResource()) {
+            if (jedis.get(id) != null)
+                throw new ShortURLAlreadyExist("Short URL already exists.");
+
             jedis.set(id, url);
         }
         String shortenedUrl = "localhost:8080/ita.ly/" + id;
